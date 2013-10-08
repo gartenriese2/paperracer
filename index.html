@@ -4,6 +4,7 @@
 	<link rel="stylesheet" type="text/css" href="paperracer.css">
 	<script type="text/javascript" src="paperracer.js"></script>
 	<script type="text/javascript" src="jquery-2.0.3.min.js"></script>
+	<script type="text/javascript" src="jquery.mousewheel.js"></script>
 </head>
 <body onload="init();">
 	<canvas id="canvas"></canvas>
@@ -13,9 +14,11 @@
 			<button class="editor" onclick="enableEditor()">Circuit editor</button>
 		</span>
 		<span class="controls_editor">
+			<button onclick="disableEditor();">Exit editor</button>
+			<button onclick="clearEditor();">Clear editor</button>
 			<button>Save your track</button>
 		</span>
-		<button>Help?</button>
+		<button onclick="alert('Shut up.');">Help?</button>
 	</div>
 </body>
 </html>

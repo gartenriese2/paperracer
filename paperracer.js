@@ -35,7 +35,7 @@ function initGrid() {
     context.strokeStyle = "#888888";
     context.translate(0.5, 0.5);
 
-	for (var i = 0; i < canvas.width; i += 10) {
+	for (var i = 0; i < canvas.width; i += 17) {
 		
 		context.beginPath();
 		context.moveTo(i, 0);
@@ -44,7 +44,7 @@ function initGrid() {
 		
 	};
 
-	for (var i = 0; i < canvas.height; i += 10) {
+	for (var i = 0; i < canvas.height; i += 17) {
 
 		context.beginPath();
 		context.moveTo(0, i);
@@ -192,26 +192,27 @@ function createCurve(start, end, down) {
 
 }
 
-function createTrack() {
+function repaint() {
 
+	context.strokeStyle = "#000000";
 	context.beginPath();
 
 	for (var i = 0; i < editorUserPoints.length; i++) {
-		if (i == 0) context.moveTo(editorUserPoints[i].x, editorUserPoints[i].y);
-		else context.lineTo(editorUserPoints[i].x, editorUserPoints[i].y);
+		if (i == 0) {
+			context.moveTo(editorUserPoints[i].x, editorUserPoints[i].y);
+		} else {
+			context.lineWidth = editorUserPoints[i].width;
+			context.lineTo(editorUserPoints[i].x, editorUserPoints[i].y)
+			context.stroke();
+		}
 	}
 
 	context.closePath();
-	context.stroke();
-
 }
 
 function refresh() {
-
-	canvas.width = canvas.width;
-
+	canvas.width = canvas.width; // Reset whole canvas
 	initBoard();
-
 }
 
 
@@ -220,20 +221,38 @@ function refresh() {
 
 var editorUserPoints = [];
 var editorMinRoadWidth = 1;
-var editorStdRoadWidth = 2;
-var editorMaxRoadWidth = 3;
-var editorRoadDelta = 0.1;
-var editorCurrentRoadWidth = 1;
+var editorStdRoadWidth = 50;
+var editorMaxRoadWidth = 100;
+var editorCurrentRoadWidth = editorStdRoadWidth;
 
 function enableEditor() {
-	$("#canvas").bind('click.editorClick', editorClick);
+	// Display / hide buttons
 	$("#controls .editor").hide();
 	$("#controls .controls_editor").fadeIn();
+
+	// Enable click event
+	$("#canvas").bind('click.editorClick', editorClick);
+
+	// Enable mousewheel event
+	$("#canvas").bind('mousewheel', editorMouseWheel);
 }
 
 function disableEditor() {
+	// Disable click event
 	$("#canvas").unbind('click.editorClick');
+	// Disable mouse wheel event
+	$("#canvas").unbind('mousewheel');
+	// Hide buttons
+	$("#controls .controls_editor").hide();
+	$("#controls .editor").show();
+	refresh();
+	repaint();
+}
 
+function clearEditor() {
+	editorUserPoints = [];
+	refresh();
+	repaint();
 }
 
 /**
@@ -253,12 +272,35 @@ function editorClick(e) {
 	var point = new Object();
 	point.x = x;
 	point.y = y;
+	point.width = editorStdRoadWidth;
 	editorUserPoints.push(point);
 
 	// Refresh the canvas
 	refresh();
 
 	// Render canvas
-	createTrack();
+	repaint();
 
+}
+
+/**
+ * Callback function that is called when the mouswheel is
+ * used
+ * @param Event e The browser event
+ * @param int delta Movement of the wheel
+ */
+function editorMouseWheel(e, delta) {
+	// Change width of the last point
+	var index = editorUserPoints.length-1;
+	if(index > 0) {
+		editorUserPoints[index].width += delta;
+		if(editorUserPoints[index].width > editorMaxRoadWidth) {
+			editorUserPoints[index].width = editorMaxRoadWidth;
+		} else if(editorUserPoints[index].width < editorMinRoadWidth) {
+			editorUserPoints[index].width = editorMinRoadWidth;
+		}
+		console.log("New road width: " + editorUserPoints[index].width);
+	}
+	refresh();
+	repaint();
 }
