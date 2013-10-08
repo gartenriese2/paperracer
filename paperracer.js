@@ -8,7 +8,9 @@ function init() {
 	canvas = document.getElementById("canvas");
 	context = canvas.getContext("2d");
 
+	window.addEventListener('resize', initGrid, false);
 	initGrid();
+
 	console.log("Initialization done.");
 
 	
@@ -17,7 +19,9 @@ function init() {
 function initGrid() {
 
 	console.log("Initializing grid ...");
-	console.log(canvas.width);
+	
+	canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
 	for (var i = 0; i < canvas.width; i += 10) {
 		
