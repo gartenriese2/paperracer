@@ -197,3 +197,26 @@ function createCurve(start, end, down) {
 	return curve;
 
 }
+
+/* Editor */
+
+var editorUserPoints = [];
+
+function enableEditor() {
+	$("#canvas").bind('click.editorClick', editorClick);
+}
+
+function disableEditor() {
+	$("#canvas").unbind('click.editorClick');
+}
+
+function editorClick(e) {
+	console.log('Click event triggered!');
+	var x = e.offsetX;
+	var y = e.offsetY;
+	console.log('x: ' + x + ", y: " + y);
+	var pos = new Object();
+	pos.x = x;
+	pos.y = y;
+	editorUserPoints.push(pos);
+}
