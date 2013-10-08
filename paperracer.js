@@ -212,8 +212,8 @@ function disableEditor() {
 
 function editorClick(e) {
 	console.log('Click event triggered!');
-	var x = e.offsetX==undefined?e.layerX:e.offsetX;
-	var y = e.offsetY==undefined?e.layerY:e.offsetY;
+	var x = e.offsetX==undefined?e.pageX:e.offsetX;
+	var y = e.offsetY==undefined?e.pageY:e.offsetY;
 	console.log('x: ' + x + ", y: " + y);
 	var pos = new Object();
 	pos.x = x;
