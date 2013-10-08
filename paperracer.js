@@ -55,48 +55,75 @@ function initGrid() {
 
 }
 
+function createTrack() {
+
+
+
+}
+
 function initTrack() {
 
-	var trackWidth = 100;
-	var trackLength = 300;
+	var trackWidth = 70;
+	var trackLength = 500;
 	
 	var start = new Object();
-	start.x = 300;
+	start.x = 500;
 	start.y = 200;
 
 	var outerRing = new Object();
+
+	curveStart = new Object();
+	curveEnd = new Object();
 	
-	outerRing.curve1 = new Object();
+	curveStart.x = start.x + trackLength;
+	curveStart.y = start.y - trackWidth;
+	curveEnd.x = curveStart.x + 2 * trackWidth;
+	curveEnd.y = curveStart.y + 2 * trackWidth;
+	outerRing.curve1 = createCurve(curveStart, curveEnd, false);
 
-	outerRing.curve1.A = new Object();
-	outerRing.curve1.A.x = start.x + trackLength;
-	outerRing.curve1.A.y = start.y - trackWidth;
+	curveStart.x = curveEnd.x;
+	curveStart.y = curveEnd.y;
+	curveEnd.x = start.x + trackLength;
+	curveEnd.y = start.y - trackWidth + 4 * trackWidth;
+	outerRing.curve2 = createCurve(curveStart, curveEnd, true);
 
-	outerRing.curve1.B = new Object();
-	outerRing.curve1.B.x = outerRing.curve1.A.x + 2 * trackWidth;
-	outerRing.curve1.B.y = outerRing.curve1.A.y + 2 * trackWidth;
+	curveStart.x = start.x;
+	curveStart.y = start.y + 3 * trackWidth;
+	curveEnd.x = start.x - 2 * trackWidth;
+	curveEnd.y = start.y + trackWidth;
+	outerRing.curve3 = createCurve(curveStart, curveEnd, false);
 
-	outerRing.curve1.K1 = new Object();
-	outerRing.curve1.K1.x = outerRing.curve1.A.x + trackWidth / 2;
-	outerRing.curve1.K1.y = outerRing.curve1.A.y;
-
-	outerRing.curve1.K2 = new Object();
-	outerRing.curve1.K2.x = outerRing.curve1.A.x + trackWidth;
-	outerRing.curve1.K2.y = start.y - trackWidth;
-
-	
-
-
-	outerRing.curve2 = new Object();
-	outerRing.curve3 = new Object();
-	outerRing.curve4 = new Object();
+	curveStart.x = start.x - 2 * trackWidth;
+	curveStart.y = start.y + trackWidth;
+	curveEnd.x = start.x;
+	curveEnd.y = start.y - trackWidth;
+	outerRing.curve4 = createCurve(curveStart, curveEnd, true);
 
 	var innerRing = new Object();
 
-	innerRing.curve1 = new Object();
-	innerRing.curve2 = new Object();
-	innerRing.curve3 = new Object();
-	innerRing.curve4 = new Object();
+	curveStart.x = start.x;
+	curveStart.y = start.y;
+	curveEnd.x = curveStart.x - trackWidth;
+	curveEnd.y = curveStart.y + trackWidth;
+	innerRing.curve1 = createCurve(curveStart, curveEnd, false);
+
+	curveStart.x = curveEnd.x;
+	curveStart.y = curveEnd.y;
+	curveEnd.x = start.x;
+	curveEnd.y = start.y + 2 * trackWidth;
+	innerRing.curve2 = createCurve(curveStart, curveEnd, true);
+
+	curveStart.x = start.x + trackLength;
+	curveStart.y = start.y + 2 * trackWidth;
+	curveEnd.x = start.x + trackLength + trackWidth;
+	curveEnd.y = start.y + trackWidth;
+	innerRing.curve3 = createCurve(curveStart, curveEnd, false);
+
+	curveStart.x = start.x + trackLength + trackWidth;
+	curveStart.y = start.y + trackWidth;
+	curveEnd.x = start.x + trackLength;
+	curveEnd.y = start.y;
+	innerRing.curve4 = createCurve(curveStart, curveEnd, true);
 
 	context.lineWidth = 10;
 	context.strokeStyle = "#000000";
@@ -104,22 +131,69 @@ function initTrack() {
 	context.beginPath();
 	context.moveTo(start.x, start.y);
 	context.lineTo(start.x, start.y - trackWidth);
-	context.lineTo(start.x + trackLength, start.y - trackWidth);
-	context.bezierCurveTo(start.x + trackLength + trackWidth / 2, start.y - trackWidth, 600,200, 600,250);
-	context.bezierCurveTo(600,300, 550,350, 500,350);
-	context.lineTo(300,350);
-	context.bezierCurveTo(250,350, 200,300, 200,250);
-	context.bezierCurveTo(200,200, 250,150, 300,150);
-	context.lineTo(300,200);
-	context.bezierCurveTo(275,200, 250,225, 250,250);
-	context.bezierCurveTo(250,275, 275,300, 300,300);
-	context.lineTo(500,300);
-	context.bezierCurveTo(525,300, 550,275, 550,250);
-	context.bezierCurveTo(550,225, 525,200, 500,200);
+
+	addCurveToContext(outerRing.curve1);
+	addCurveToContext(outerRing.curve2);
+	addCurveToContext(outerRing.curve3);
+	addCurveToContext(outerRing.curve4);
+
+	context.lineTo(start.x, start.y);
+
+	addCurveToContext(innerRing.curve1);
+	addCurveToContext(innerRing.curve2);
+	addCurveToContext(innerRing.curve3);
+	addCurveToContext(innerRing.curve4);
+	
 	context.closePath();
 	context.stroke();
 
 	context.fillStyle = "#AAAAAA";
 	context.fill();
+
+}
+
+function addCurveToContext(curve) {
+
+	var A = curve.A;
+	var B = curve.B;
+	var K1 = curve.K1;
+	var K2 = curve.K2;
+
+	context.lineTo(A.x, A.y);
+	context.bezierCurveTo(K1.x, K1.y, K2.x, K2.y, B.x, B.y);
+
+}
+
+function createCurve(start, end, down) {
+
+	var curve = new Object();
+
+	curve.A = new Object();
+	curve.A.x = start.x;
+	curve.A.y = start.y;
+
+	curve.B = new Object();
+	curve.B.x = end.x;
+	curve.B.y = end.y;
+
+	curve.K1 = new Object();
+	if (down) {
+		curve.K1.x = start.x;
+		curve.K1.y = start.y + (end.y - start.y) / 2;
+	} else {
+		curve.K1.x = start.x + (end.x - start.x) / 2;
+		curve.K1.y = start.y;
+	}
+
+	curve.K2 = new Object();
+	if (down) {
+		curve.K2.x = end.x - (end.x - start.x) / 2;
+		curve.K2.y = end.y;
+	} else {
+		curve.K2.x = end.x;
+		curve.K2.y = end.y - (end.y - start.y) / 2;
+	}
+
+	return curve;
 
 }
