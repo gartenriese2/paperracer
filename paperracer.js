@@ -22,7 +22,7 @@ function initBoard() {
 	canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-	initTrack();
+	//initTrack();
 	initGrid();
 
 }
@@ -52,12 +52,6 @@ function initGrid() {
 		context.stroke();
 
 	}
-
-}
-
-function createTrack() {
-
-
 
 }
 
@@ -198,16 +192,41 @@ function createCurve(start, end, down) {
 
 }
 
+function createTrack() {
+
+	context.beginPath();
+
+	for (var i = 0; i < editorUserPoints.length; i++) {
+		if (i == 0) context.moveTo(editorUserPoints[i].x, editorUserPoints[i].y);
+		else context.lineTo(editorUserPoints[i].x, editorUserPoints[i].y);
+	}
+
+	context.closePath();
+	context.stroke();
+
+}
+
+function refresh() {
+
+	canvas.width = canvas.width;
+
+	initBoard();
+
+}
+
 /* Editor */
 
 var editorUserPoints = [];
 
 function enableEditor() {
 	$("#canvas").bind('click.editorClick', editorClick);
+	$("#controls .editor").hide();
+	$("#controls .controls_editor").fadeIn();
 }
 
 function disableEditor() {
 	$("#canvas").unbind('click.editorClick');
+
 }
 
 function editorClick(e) {
@@ -219,4 +238,9 @@ function editorClick(e) {
 	pos.x = x;
 	pos.y = y;
 	editorUserPoints.push(pos);
+
+	refresh();
+
+	createTrack();
+
 }

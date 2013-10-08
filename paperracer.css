@@ -17,7 +17,7 @@ body {
 	z-index:1000;
 }
 
-#controls>button {
+#controls button {
 	border-radius:3px;
 	border:0px;
 	color:white;
@@ -34,25 +34,28 @@ body {
     background-color:#B5B5B5;
 }
 
-#controls>button:hover {
+#controls button:hover {
 	background-color:#DBDBDB;
     box-shadow: 0 0 5px rgba(219, 219, 219, 1);
     -webkit-box-shadow: 0 0 5px rgba(219, 219, 219, 1); 
     -moz-box-shadow: 0 0 5px rgba(219, 219, 219, 1);
 }
 
-#controls>button.start {
+#controls button.start {
 	background-color:#54CC6C;
 }
 
-#controls>button.start:hover {
+#controls button.start:hover {
 	background-color:#5EE078;
     box-shadow: 0 0 5px rgba(94, 224, 120, 1);
     -webkit-box-shadow: 0 0 5px rgba(94, 224, 120, 1); 
     -moz-box-shadow: 0 0 5px rgba(94, 224, 120, 1);
 }
 
-#controls>button.editor {
+#controls button.editor {
 
 }
 
+#controls .controls_editor {
+	display: none;
+}
