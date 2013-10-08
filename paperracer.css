@@ -4,5 +4,55 @@ body {
 }
 
 #canvas {
-	
+	z-index:999;
+	position:absolute;
+	top:0px;
+	left:0px;
 }
+
+#controls {
+	position:absolute;
+	top:10px;
+	left:10px;
+	z-index:1000;
+}
+
+#controls>button {
+	border-radius:3px;
+	border:0px;
+	color:white;
+	cursor:pointer;
+	height:30px;
+	line-height:30px;
+	padding-left:10px;
+	padding-right:10px;
+	text-transform:uppercase;
+	font-weight:bold;
+	transition: all 0.25s ease-in-out;
+    -webkit-transition: all 0.25s ease-in-out;
+    -moz-transition: all 0.25s ease-in-out;
+    background-color:#B5B5B5;
+}
+
+#controls>button:hover {
+	background-color:#DBDBDB;
+    box-shadow: 0 0 5px rgba(219, 219, 219, 1);
+    -webkit-box-shadow: 0 0 5px rgba(219, 219, 219, 1); 
+    -moz-box-shadow: 0 0 5px rgba(219, 219, 219, 1);
+}
+
+#controls>button.start {
+	background-color:#54CC6C;
+}
+
+#controls>button.start:hover {
+	background-color:#5EE078;
+    box-shadow: 0 0 5px rgba(94, 224, 120, 1);
+    -webkit-box-shadow: 0 0 5px rgba(94, 224, 120, 1); 
+    -moz-box-shadow: 0 0 5px rgba(94, 224, 120, 1);
+}
+
+#controls>button.editor {
+
+}
+
