@@ -214,9 +214,16 @@ function refresh() {
 
 }
 
+
 /* Editor */
 
+
 var editorUserPoints = [];
+var editorMinRoadWidth = 1;
+var editorStdRoadWidth = 2;
+var editorMaxRoadWidth = 3;
+var editorRoadDelta = 0.1;
+var editorCurrentRoadWidth = 1;
 
 function enableEditor() {
 	$("#canvas").bind('click.editorClick', editorClick);
@@ -229,18 +236,29 @@ function disableEditor() {
 
 }
 
+/**
+ * Event which is triggered on a click
+ * @param  {Event} e The click event
+ */
 function editorClick(e) {
 	console.log('Click event triggered!');
+
+	// Get coordinates
 	var x = e.offsetX==undefined?e.pageX:e.offsetX;
 	var y = e.offsetY==undefined?e.pageY:e.offsetY;
-	console.log('x: ' + x + ", y: " + y);
-	var pos = new Object();
-	pos.x = x;
-	pos.y = y;
-	editorUserPoints.push(pos);
 
+	// Reset width
+	editorCurrentRoadWidth = editorStdRoadWidth;
+
+	var point = new Object();
+	point.x = x;
+	point.y = y;
+	editorUserPoints.push(point);
+
+	// Refresh the canvas
 	refresh();
 
+	// Render canvas
 	createTrack();
 
 }
