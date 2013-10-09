@@ -194,20 +194,24 @@ function createCurve(start, end, down) {
 
 function repaint() {
 
-	var vectors = calculateVectors();
-	var sidePoints = calculateSidePoints(vectors);
+	if (editorUserPoints.length > 3) {
 
-	drawPath(sidePoints);
-	var controlPoints = calculateControlPoints(sidePoints, vectors);
-	// context.strokeStyle = "#FF0000";
-	// drawPath(controlPoints);
-	// context.strokeStyle = "#000000";
+		var vectors = calculateVectors();
+		var sidePoints = calculateSidePoints(vectors);
+		var controlPoints = calculateControlPoints(sidePoints, vectors);
 
-	// drawSmoothPath(sidePoints, controlPoints);
-	// drawPath(controlPoints);
+		context.lineWidth = 10;
+		context.strokeStyle = "#000000";
+		drawSmoothPath(sidePoints, controlPoints);
+		context.fillStyle = "#AAAAAA";
+		context.fill();
+
+	}
+
+	initGrid();
 
 }
-
+ 
 function drawPath(path) {
 
 	context.beginPath();
@@ -234,8 +238,6 @@ function drawPath(path) {
 
 function drawSmoothPath(path, controlPoints) {
 
-	console.log(controlPoints.length);
-
 	context.beginPath();
 
 	for (var i = 0; i < path.length; i++) {
@@ -256,12 +258,6 @@ function drawSmoothPath(path, controlPoints) {
 	};
 
 	context.stroke();
-
-}
-
-function alignPoints(points, vectors) {
-
-
 
 }
 
@@ -308,11 +304,41 @@ function calculateVectors() {
 
 function calculateIntersection(A,vA,B,vB) {
 
-	var beta = (B.y - A.y - (B.x - A.x) * vA.y / vA.x) / (vB.y - vA.x * vB.x / vA.y);
-
 	var intersection = new Object();
+	var beta = 0;
+
+	if ((vA.x == 0 && vB.x == 0) || (vA.y == 0 && vB.y == 0)) {
+		intersection.x = (A.x + B.x) / 2;
+		intersection.y = (A.y + B.y) / 2;
+		return intersection;
+	} else if (vA.x == 0) {
+		beta = (A.x - B.x) / vB.x;
+	} else if (vA.y == 0) {
+		beta = (A.y - B.y) / vB.y;
+	} else if (vB.x == 0 || vB.y == 0) {
+		if (vB.x == 0) {
+			beta = (B.x - A.x) / vA.x;
+		} else {
+			beta = (B.y - A.y) / vA.y;
+		}
+		intersection.x = A.x + beta * vA.x;
+		intersection.y = A.y + beta * vA.y;
+		return intersection;
+	} else {
+		beta = (A.y - B.y + (B.x - A.x) * vA.y / vA.x) / (vB.y - vA.y * vB.x / vA.x);
+	}
+
+	
+	console.log("beta: " + beta);
+	
 	intersection.x = B.x + beta * vB.x;
 	intersection.y = B.y + beta * vB.y;
+
+	console.log("Ax: " + A.x + ", Ay: " + A.y);
+	console.log("vAx: " + vA.x + ", vAy: " + vA.y);
+	console.log("Bx: " + B.x + ", By: " + B.y);
+	console.log("vBx: " + vB.x + ", vBy: " + vB.y);
+	console.log("Sx: " + intersection.x + " , Sy: " + intersection.y);
 
 	return intersection;
 
@@ -322,12 +348,16 @@ function calculateControlPoints(path, vectors) {
 
 	var controlPoints = [];
 
-	for (var i = 0; i < path.length / 2 - 3; i++) {
+	for (var i = 0; i < path.length / 2 - 1; i++) {
 		
 		var A = path[i];
 		var B = path[i + 1];
 		var vA = vectors[i];
-		var vB = vectors[i + 1];
+		if (i == path.length / 2 - 2) {
+			var vB = vectors[0];
+		} else {
+			var vB = vectors[i + 1];
+		}
 
 		var S = calculateIntersection(A, vA, B, vB);
 
@@ -352,6 +382,60 @@ function calculateControlPoints(path, vectors) {
 		controlPoints.push(K2);
 
 	};
+
+	var p1 = new Object();
+	p1.x = path[0].x;
+	p1.y = path[0].y + 1;
+	controlPoints.push(p1);
+	var p2 = new Object();
+	p2.x = p1.x;
+	p2.y = path[0].y + 2;
+	controlPoints.push(p2);
+
+	var vecCount = vectors.length - 1;
+	for (var i = path.length / 2; i < path.length - 1; i++) {
+
+		var A = path[i];
+		var B = path[i + 1];
+		var vA = new Object();
+		var vB = new Object();
+		if (i == path.length / 2) {
+			vA.x = -vectors[0].x;
+			vA.y = -vectors[0].y;
+			vB.x = -vectors[vecCount].x;
+			vB.y = -vectors[vecCount].y;
+		} else {
+			vA.x = -vectors[vecCount].x;
+			vA.y = -vectors[vecCount].y;
+			vB.x = -vectors[vecCount - 1].x;
+			vB.y = -vectors[vecCount - 1].y;
+			vecCount--;
+		}
+		
+
+		var S = calculateIntersection(A, vA, B, vB);
+
+		var xDelta = (S.x - A.x) / 2;
+		var yDelta = (S.y - A.y) / 2;
+		var len = Math.sqrt(Math.pow(xDelta,2) + Math.pow(yDelta,2));
+
+		var K1 = new Object();
+		K1.x = A.x + len * vA.x;
+		K1.y = A.y + len * vA.y;
+
+		controlPoints.push(K1);
+
+		xDelta = (B.x - S.x) / 2;
+		yDelta = (B.y - S.y) / 2;
+		len = Math.sqrt(Math.pow(xDelta,2) + Math.pow(yDelta,2));
+
+		var K2 = new Object();
+		K2.x = B.x - len * vB.x;
+		K2.y = B.y - len * vB.y;
+
+		controlPoints.push(K2);
+
+	}
 
 	return controlPoints;
 
@@ -406,9 +490,9 @@ function refresh() {
 
 
 var editorUserPoints = [];
-var editorMinRoadWidth = 1;
+var editorMinRoadWidth = 25;
 var editorStdRoadWidth = 50;
-var editorMaxRoadWidth = 100;
+var editorMaxRoadWidth = 150;
 var editorCurrentRoadWidth = editorStdRoadWidth;
 
 function enableEditor() {
