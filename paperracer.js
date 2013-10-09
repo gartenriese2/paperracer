@@ -194,22 +194,17 @@ function createCurve(start, end, down) {
 
 function repaint() {
 
+	var vectors = calculateVectors();
+	var sidePoints = calculateSidePoints(vectors);
+
+	drawPath(sidePoints);
+	var controlPoints = calculateControlPoints(sidePoints, vectors);
+	// context.strokeStyle = "#FF0000";
+	// drawPath(controlPoints);
 	// context.strokeStyle = "#000000";
-	// context.beginPath();
 
-	// for (var i = 0; i < editorUserPoints.length; i++) {
-	// 	if (i == 0) {
-	// 		context.moveTo(editorUserPoints[i].x, editorUserPoints[i].y);
-	// 	} else {
-	// 		context.lineWidth = editorUserPoints[i].width;
-	// 		context.lineTo(editorUserPoints[i].x, editorUserPoints[i].y)
-	// 		context.stroke();
-	// 	}
-	// }
-
-	// context.closePath();
-
-	drawPath(calculateTrackSides());
+	// drawSmoothPath(sidePoints, controlPoints);
+	// drawPath(controlPoints);
 
 }
 
@@ -218,48 +213,184 @@ function drawPath(path) {
 	context.beginPath();
 
 	for (var i = 0; i < path.length; i++) {
+		
 		if (i == 0) {
+			
 			context.moveTo(path[i].x, path[i].y);
+		
 		} else {
+			
 			context.lineWidth = path[i].width;
 			context.lineTo(path[i].x, path[i].y)
 			context.stroke();
+
 		}
+
 	}
 
 	context.closePath();
 
 }
 
-function calculateTrackSides() {
+function drawSmoothPath(path, controlPoints) {
+
+	console.log(controlPoints.length);
+
+	context.beginPath();
+
+	for (var i = 0; i < path.length; i++) {
+		
+		if (i == 0) {
+			
+			context.moveTo(path[i].x, path[i].y);
+		
+		} else {
+
+			context.bezierCurveTo(controlPoints[2 * (i - 1)].x, controlPoints[2 * (i - 1)].y,
+								controlPoints[2 * (i - 1) + 1].x, controlPoints[2 * (i - 1) + 1].y,
+								path[i].x, path[i].y);
+
+
+		}
+
+	};
+
+	context.stroke();
+
+}
+
+function alignPoints(points, vectors) {
+
+
+
+}
+
+function calculateVectors() {
+
+	var sideVectors = [];
+
+	for (var i = 0; i < editorUserPoints.length; i++) {
+		
+		if (i == 0) {
+
+			var vec = new Object();
+			vec.x = 1;
+			vec.y = 0;
+			sideVectors.push(vec);
+
+		} else if (i == editorUserPoints.length - 1) {
+
+			var vec = new Object();
+			vec.x = editorUserPoints[0].x - editorUserPoints[i - 1].x;
+			vec.y = editorUserPoints[0].y - editorUserPoints[i - 1].y;
+			var len = Math.sqrt(Math.pow(vec.x,2) + Math.pow(vec.y,2));
+			vec.x /= len;
+			vec.y /= len;
+			sideVectors.push(vec);
+
+		} else {
+
+			var vec = new Object();
+			vec.x = editorUserPoints[i + 1].x - editorUserPoints[i - 1].x;
+			vec.y = editorUserPoints[i + 1].y - editorUserPoints[i - 1].y;
+			var len = Math.sqrt(Math.pow(vec.x,2) + Math.pow(vec.y,2));
+			vec.x /= len;
+			vec.y /= len;
+			sideVectors.push(vec);
+
+		}
+
+	}
+
+	return sideVectors;
+
+}
+
+function calculateIntersection(A,vA,B,vB) {
+
+	var beta = (B.y - A.y - (B.x - A.x) * vA.y / vA.x) / (vB.y - vA.x * vB.x / vA.y);
+
+	var intersection = new Object();
+	intersection.x = B.x + beta * vB.x;
+	intersection.y = B.y + beta * vB.y;
+
+	return intersection;
+
+}
+
+function calculateControlPoints(path, vectors) {
+
+	var controlPoints = [];
+
+	for (var i = 0; i < path.length / 2 - 3; i++) {
+		
+		var A = path[i];
+		var B = path[i + 1];
+		var vA = vectors[i];
+		var vB = vectors[i + 1];
+
+		var S = calculateIntersection(A, vA, B, vB);
+
+		var xDelta = (S.x - A.x) / 2;
+		var yDelta = (S.y - A.y) / 2;
+		var len = Math.sqrt(Math.pow(xDelta,2) + Math.pow(yDelta,2));
+
+		var K1 = new Object();
+		K1.x = A.x + len * vA.x;
+		K1.y = A.y + len * vA.y;
+
+		controlPoints.push(K1);
+
+		xDelta = (B.x - S.x) / 2;
+		yDelta = (B.y - S.y) / 2;
+		len = Math.sqrt(Math.pow(xDelta,2) + Math.pow(yDelta,2));
+
+		var K2 = new Object();
+		K2.x = B.x - len * vB.x;
+		K2.y = B.y - len * vB.y;
+
+		controlPoints.push(K2);
+
+	};
+
+	return controlPoints;
+
+}
+
+function calculateSidePoints(vectors) {
 
 	var sidePoints = [];
 
 	for (var i = 0; i < editorUserPoints.length; i++) {
 		
 		var point = new Object();
-		point.x = editorUserPoints[i].x;
-		if (i == 0 || editorUserPoints[i - 1].x < editorUserPoints[i].x) {
-			point.y = editorUserPoints[i].y - editorUserPoints[i].width;
-		} else {
-			point.y = editorUserPoints[i].y + editorUserPoints[i].width;
-		}
+
+		point.x = editorUserPoints[i].x + editorUserPoints[i].width * vectors[i].y;
+		point.y = editorUserPoints[i].y + editorUserPoints[i].width * -vectors[i].x;
+
 		sidePoints.push(point);
 
-	};
+	}
+
+	var point1 = new Object();
+	var point2 = new Object();
+	point1.x = editorUserPoints[0].x;
+	point1.y = editorUserPoints[0].y - editorUserPoints[0].width;
+	sidePoints.push(point1);
+	point2.x = point1.x;
+	point2.y = editorUserPoints[0].y + editorUserPoints[0].width;
+	sidePoints.push(point2);
 
 	for (var i = editorUserPoints.length - 1; i >= 0; i--) {
 		
 		var point = new Object();
-		point.x = editorUserPoints[i].x;
-		if (i == 0 || editorUserPoints[i - 1].x < editorUserPoints[i].x) {
-			point.y = editorUserPoints[i].y + editorUserPoints[i].width;
-		} else {
-			point.y = editorUserPoints[i].y - editorUserPoints[i].width;
-		}
+
+		point.x = editorUserPoints[i].x - editorUserPoints[i].width * vectors[i].y;
+		point.y = editorUserPoints[i].y - editorUserPoints[i].width * -vectors[i].x;
+
 		sidePoints.push(point);
 
-	};
+	}
 
 	return sidePoints;
 
