@@ -194,20 +194,75 @@ function createCurve(start, end, down) {
 
 function repaint() {
 
-	context.strokeStyle = "#000000";
+	// context.strokeStyle = "#000000";
+	// context.beginPath();
+
+	// for (var i = 0; i < editorUserPoints.length; i++) {
+	// 	if (i == 0) {
+	// 		context.moveTo(editorUserPoints[i].x, editorUserPoints[i].y);
+	// 	} else {
+	// 		context.lineWidth = editorUserPoints[i].width;
+	// 		context.lineTo(editorUserPoints[i].x, editorUserPoints[i].y)
+	// 		context.stroke();
+	// 	}
+	// }
+
+	// context.closePath();
+
+	drawPath(calculateTrackSides());
+
+}
+
+function drawPath(path) {
+
 	context.beginPath();
 
-	for (var i = 0; i < editorUserPoints.length; i++) {
+	for (var i = 0; i < path.length; i++) {
 		if (i == 0) {
-			context.moveTo(editorUserPoints[i].x, editorUserPoints[i].y);
+			context.moveTo(path[i].x, path[i].y);
 		} else {
-			context.lineWidth = editorUserPoints[i].width;
-			context.lineTo(editorUserPoints[i].x, editorUserPoints[i].y)
+			context.lineWidth = path[i].width;
+			context.lineTo(path[i].x, path[i].y)
 			context.stroke();
 		}
 	}
 
 	context.closePath();
+
+}
+
+function calculateTrackSides() {
+
+	var sidePoints = [];
+
+	for (var i = 0; i < editorUserPoints.length; i++) {
+		
+		var point = new Object();
+		point.x = editorUserPoints[i].x;
+		if (i == 0 || editorUserPoints[i - 1].x < editorUserPoints[i].x) {
+			point.y = editorUserPoints[i].y - editorUserPoints[i].width;
+		} else {
+			point.y = editorUserPoints[i].y + editorUserPoints[i].width;
+		}
+		sidePoints.push(point);
+
+	};
+
+	for (var i = editorUserPoints.length - 1; i >= 0; i--) {
+		
+		var point = new Object();
+		point.x = editorUserPoints[i].x;
+		if (i == 0 || editorUserPoints[i - 1].x < editorUserPoints[i].x) {
+			point.y = editorUserPoints[i].y + editorUserPoints[i].width;
+		} else {
+			point.y = editorUserPoints[i].y - editorUserPoints[i].width;
+		}
+		sidePoints.push(point);
+
+	};
+
+	return sidePoints;
+
 }
 
 function refresh() {
@@ -267,12 +322,12 @@ function editorClick(e) {
 	var y = e.offsetY==undefined?e.pageY:e.offsetY;
 
 	// Reset width
-	editorCurrentRoadWidth = editorStdRoadWidth;
+	//editorCurrentRoadWidth = editorStdRoadWidth;
 
 	var point = new Object();
 	point.x = x;
 	point.y = y;
-	point.width = editorStdRoadWidth;
+	point.width = editorCurrentRoadWidth;
 	editorUserPoints.push(point);
 
 	// Refresh the canvas
@@ -294,6 +349,7 @@ function editorMouseWheel(e, delta) {
 	var index = editorUserPoints.length-1;
 	if(index > 0) {
 		editorUserPoints[index].width += delta;
+		editorCurrentRoadWidth = editorUserPoints[index].width;
 		if(editorUserPoints[index].width > editorMaxRoadWidth) {
 			editorUserPoints[index].width = editorMaxRoadWidth;
 		} else if(editorUserPoints[index].width < editorMinRoadWidth) {
