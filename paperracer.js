@@ -304,3 +304,8 @@ function editorMouseWheel(e, delta) {
 	refresh();
 	repaint();
 }
+
+function editorSave() {
+	var jsonString = JSON.stringify(editorUserPoints);
+	alert(jsonString);
+}
