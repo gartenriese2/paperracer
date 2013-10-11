@@ -59,3 +59,7 @@ body {
 #controls .controls_editor {
 	display: none;
 }
+
+#controls button.exit_editor {
+	background-color: #CC5432;
+}

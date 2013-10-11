@@ -192,23 +192,50 @@ function createCurve(start, end, down) {
 
 }
 
+/*
+	
+	EDITOR FUNCTIONS
+
+*/
+
 function repaint() {
 
-	if (editorUserPoints.length > 3) {
+	
+
+	if (editorUserPoints.length > 1) {
 
 		var vectors = calculateVectors();
 		var sidePoints = calculateSidePoints(vectors);
 		var controlPoints = calculateControlPoints(sidePoints, vectors);
 
-		context.lineWidth = 10;
-		context.strokeStyle = "#000000";
-		drawSmoothPath(sidePoints, controlPoints);
-		context.fillStyle = "#AAAAAA";
-		context.fill();
+		//drawPath(controlPoints);
+		drawTrack(sidePoints, controlPoints);
+		drawFinishLine(sidePoints);
 
 	}
 
 	initGrid();
+
+}
+
+function drawTrack(sidePoints, controlPoints) {
+
+	context.lineWidth = 10;
+	context.strokeStyle = "#000000";
+	drawSmoothPath(sidePoints, controlPoints);
+	context.fillStyle = "#AAAAAA";
+	context.fill();
+
+}
+
+function drawFinishLine(sidePoints) {
+
+	context.lineWidth = 5;
+	context.strokeStyle = "#FF0000";
+	var line = [];
+	line.push(sidePoints[0]);
+	line.push(sidePoints[sidePoints.length - 1]);
+	drawPath(line);
 
 }
  
@@ -224,15 +251,13 @@ function drawPath(path) {
 		
 		} else {
 			
-			context.lineWidth = path[i].width;
 			context.lineTo(path[i].x, path[i].y)
-			context.stroke();
 
 		}
 
 	}
 
-	context.closePath();
+	context.stroke();
 
 }
 
@@ -255,7 +280,7 @@ function drawSmoothPath(path, controlPoints) {
 
 		}
 
-	};
+	}
 
 	context.stroke();
 
@@ -277,8 +302,15 @@ function calculateVectors() {
 		} else if (i == editorUserPoints.length - 1) {
 
 			var vec = new Object();
-			vec.x = editorUserPoints[0].x - editorUserPoints[i - 1].x;
-			vec.y = editorUserPoints[0].y - editorUserPoints[i - 1].y;
+			
+			if (trackFinished) {
+				vec.x = editorUserPoints[0].x - editorUserPoints[i - 1].x;
+				vec.y = editorUserPoints[0].y - editorUserPoints[i - 1].y;
+			} else {
+				vec.x = editorUserPoints[i].x - editorUserPoints[i - 1].x;
+				vec.y = editorUserPoints[i].y - editorUserPoints[i - 1].y;
+			}
+			
 			var len = Math.sqrt(Math.pow(vec.x,2) + Math.pow(vec.y,2));
 			vec.x /= len;
 			vec.y /= len;
@@ -327,18 +359,9 @@ function calculateIntersection(A,vA,B,vB) {
 	} else {
 		beta = (A.y - B.y + (B.x - A.x) * vA.y / vA.x) / (vB.y - vA.y * vB.x / vA.x);
 	}
-
-	
-	console.log("beta: " + beta);
 	
 	intersection.x = B.x + beta * vB.x;
 	intersection.y = B.y + beta * vB.y;
-
-	console.log("Ax: " + A.x + ", Ay: " + A.y);
-	console.log("vAx: " + vA.x + ", vAy: " + vA.y);
-	console.log("Bx: " + B.x + ", By: " + B.y);
-	console.log("vBx: " + vB.x + ", vBy: " + vB.y);
-	console.log("Sx: " + intersection.x + " , Sy: " + intersection.y);
 
 	return intersection;
 
@@ -383,14 +406,32 @@ function calculateControlPoints(path, vectors) {
 
 	};
 
+
 	var p1 = new Object();
-	p1.x = path[0].x;
-	p1.y = path[0].y + 1;
-	controlPoints.push(p1);
 	var p2 = new Object();
-	p2.x = p1.x;
-	p2.y = path[0].y + 2;
-	controlPoints.push(p2);
+
+	if (trackFinished) {
+		
+		p1.x = path[0].x;
+		p1.y = path[0].y + 1;
+		controlPoints.push(p1);
+		
+		p2.x = p1.x;
+		p2.y = path[0].y + 2;
+		controlPoints.push(p2);
+
+	} else {
+
+		p1.x = path[path.length / 2 - 1].x - vectors[vectors.length - 1].y;
+		p1.y = path[path.length / 2 - 1].y + vectors[vectors.length - 1].x;
+		controlPoints.push(p1);
+		
+		p2.x = path[path.length / 2].x + vectors[vectors.length - 1].y;
+		p2.y = path[path.length / 2].y - vectors[vectors.length - 1].x;
+		controlPoints.push(p2);
+
+	}
+	
 
 	var vecCount = vectors.length - 1;
 	for (var i = path.length / 2; i < path.length - 1; i++) {
@@ -399,7 +440,7 @@ function calculateControlPoints(path, vectors) {
 		var B = path[i + 1];
 		var vA = new Object();
 		var vB = new Object();
-		if (i == path.length / 2) {
+		if (i == path.length / 2 && trackFinished) {
 			vA.x = -vectors[0].x;
 			vA.y = -vectors[0].y;
 			vB.x = -vectors[vecCount].x;
@@ -456,14 +497,16 @@ function calculateSidePoints(vectors) {
 
 	}
 
-	var point1 = new Object();
-	var point2 = new Object();
-	point1.x = editorUserPoints[0].x;
-	point1.y = editorUserPoints[0].y - editorUserPoints[0].width;
-	sidePoints.push(point1);
-	point2.x = point1.x;
-	point2.y = editorUserPoints[0].y + editorUserPoints[0].width;
-	sidePoints.push(point2);
+	if (trackFinished) {
+		var point1 = new Object();
+		var point2 = new Object();
+		point1.x = editorUserPoints[0].x;
+		point1.y = editorUserPoints[0].y - editorUserPoints[0].width;
+		sidePoints.push(point1);
+		point2.x = point1.x;
+		point2.y = editorUserPoints[0].y + editorUserPoints[0].width;
+		sidePoints.push(point2);
+	}
 
 	for (var i = editorUserPoints.length - 1; i >= 0; i--) {
 		
@@ -495,8 +538,39 @@ var editorStdRoadWidth = 50;
 var editorMaxRoadWidth = 150;
 var editorCurrentRoadWidth = editorStdRoadWidth;
 
+var trackFinished = false;
+
+function unDo() {
+
+	if (trackFinished) {
+
+		trackFinished = false;
+		refresh();
+		repaint();
+
+	} else if (editorUserPoints.length >= 1) {
+
+		editorUserPoints.splice(editorUserPoints.length - 1, 1);
+		refresh();
+		repaint();
+
+	}
+
+}
+
+function finishTrack() {
+	
+	if (editorUserPoints.length > 3) {
+		trackFinished = true;
+		refresh();
+		repaint();
+	}
+	
+}
+
 function enableEditor() {
 	// Display / hide buttons
+	$("#controls .start").hide();
 	$("#controls .editor").hide();
 	$("#controls .controls_editor").fadeIn();
 
@@ -514,6 +588,7 @@ function disableEditor() {
 	$("#canvas").unbind('mousewheel');
 	// Hide buttons
 	$("#controls .controls_editor").hide();
+	$("#controls .start").show();
 	$("#controls .editor").show();
 	refresh();
 	repaint();
@@ -521,6 +596,7 @@ function disableEditor() {
 
 function clearEditor() {
 	editorUserPoints = [];
+	trackFinished = false;
 	refresh();
 	repaint();
 }
