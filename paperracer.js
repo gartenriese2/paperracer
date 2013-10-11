@@ -27,6 +27,8 @@ function initBoard() {
 
 }
 
+var gridSize = 17;
+
 function initGrid() {
 
 	console.log("Initializing grid ...");
@@ -35,7 +37,7 @@ function initGrid() {
     context.strokeStyle = "#888888";
     context.translate(0.5, 0.5);
 
-	for (var i = 0; i < canvas.width; i += 17) {
+	for (var i = 0; i < canvas.width; i += gridSize) {
 		
 		context.beginPath();
 		context.moveTo(i, 0);
@@ -44,7 +46,7 @@ function initGrid() {
 		
 	};
 
-	for (var i = 0; i < canvas.height; i += 17) {
+	for (var i = 0; i < canvas.height; i += gridSize) {
 
 		context.beginPath();
 		context.moveTo(0, i);
@@ -523,11 +525,49 @@ function calculateSidePoints(vectors) {
 
 }
 
+function snapToGrid(point) {
+
+	point.x = gridSize * Math.round(point.x / gridSize);
+	point.y = gridSize * Math.round(point.y / gridSize);
+
+}
+
 function refresh() {
 	canvas.width = canvas.width; // Reset whole canvas
 	initBoard();
 }
 
+/* Testing */
+
+function testTrack() {
+
+	if (trackFinished) {
+
+		// Disable click event
+		$("#canvas").unbind('click.editorClick');
+
+		// Disable mouse wheel event
+		$("#canvas").unbind('mousewheel');
+
+		$("#controls .controls_editor").hide();
+		$("#controls .controls_testTrack").fadeIn();
+
+	}
+
+}
+
+function endTestTrack() {
+
+	// Enable click event
+	$("#canvas").bind('click.editorClick', editorClick);
+
+	// Enable mousewheel event
+	$("#canvas").bind('mousewheel', editorMouseWheel);
+
+	$("#controls .controls_testTrack").hide();
+	$("#controls .controls_editor").fadeIn();
+
+}
 
 /* Editor */
 
@@ -582,6 +622,7 @@ function enableEditor() {
 }
 
 function disableEditor() {
+	
 	// Disable click event
 	$("#canvas").unbind('click.editorClick');
 	// Disable mouse wheel event
@@ -590,8 +631,9 @@ function disableEditor() {
 	$("#controls .controls_editor").hide();
 	$("#controls .start").show();
 	$("#controls .editor").show();
-	refresh();
-	repaint();
+	
+	clearEditor();
+
 }
 
 function clearEditor() {
@@ -618,6 +660,7 @@ function editorClick(e) {
 	var point = new Object();
 	point.x = x;
 	point.y = y;
+	snapToGrid(point);
 	point.width = editorCurrentRoadWidth;
 	editorUserPoints.push(point);
 

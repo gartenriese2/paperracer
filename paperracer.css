@@ -60,6 +60,18 @@ body {
 	display: none;
 }
 
+#controls .controls_testTrack {
+	display: none;
+}
+
 #controls button.exit_editor {
+	background-color: #CC5432;
+}
+
+#controls button.start_testing {
+	background-color: #54CC6C;
+}
+
+#controls button.exit_testing {
 	background-color: #CC5432;
 }

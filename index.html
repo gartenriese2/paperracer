@@ -15,9 +15,14 @@
 		</span>
 		<span class="controls_editor">
 			<button class="exit_editor" onclick="disableEditor();">Exit editor</button>
+			<button class="start_testing" onclick="testTrack();">Test track</button>
 			<button onclick="unDo();">Undo</button>
 			<button onclick="finishTrack();">Finish Track</button>
 			<button onclick="clearEditor();">Clear editor</button>
+			<button onclick="editorSave();">Save your track</button>
+		</span>
+		<span class="controls_testTrack">
+			<button class="exit_testing" onclick="endTestTrack();">Stop testing</button>
 			<button onclick="editorSave();">Save your track</button>
 		</span>
 		<button onclick="alert('Shut up.');">Help?</button>
