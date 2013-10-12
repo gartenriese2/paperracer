@@ -222,11 +222,11 @@ function repaint() {
 
 function drawTrack(sidePoints, controlPoints) {
 
-	context.lineWidth = 10;
+	context.lineWidth = 2;
 	context.strokeStyle = "#000000";
 	drawSmoothPath(sidePoints, controlPoints);
 	context.fillStyle = "#AAAAAA";
-	context.fill();
+	//context.fill();
 
 }
 
@@ -390,9 +390,10 @@ function calculateControlPoints(path, vectors) {
 		var yDelta = (S.y - A.y) / 2;
 		var len = Math.sqrt(Math.pow(xDelta,2) + Math.pow(yDelta,2));
 
-		var K1 = new Object();
+		var K1 = new Point();
 		K1.x = A.x + len * vA.x;
 		K1.y = A.y + len * vA.y;
+		K1.draw(context, "#FF0000");
 
 		controlPoints.push(K1);
 
@@ -400,9 +401,10 @@ function calculateControlPoints(path, vectors) {
 		yDelta = (B.y - S.y) / 2;
 		len = Math.sqrt(Math.pow(xDelta,2) + Math.pow(yDelta,2));
 
-		var K2 = new Object();
+		var K2 = new Point();
 		K2.x = B.x - len * vB.x;
 		K2.y = B.y - len * vB.y;
+		K2.draw(context, "#00FF00");
 
 		controlPoints.push(K2);
 
@@ -490,7 +492,7 @@ function calculateSidePoints(vectors) {
 
 	for (var i = 0; i < editorUserPoints.length; i++) {
 		
-		var point = new Object();
+		var point = new Point();
 
 		point.x = editorUserPoints[i].x + editorUserPoints[i].width * vectors[i].y;
 		point.y = editorUserPoints[i].y + editorUserPoints[i].width * -vectors[i].x;
@@ -500,8 +502,8 @@ function calculateSidePoints(vectors) {
 	}
 
 	if (trackFinished) {
-		var point1 = new Object();
-		var point2 = new Object();
+		var point1 = new Point();
+		var point2 = new Point();
 		point1.x = editorUserPoints[0].x;
 		point1.y = editorUserPoints[0].y - editorUserPoints[0].width;
 		sidePoints.push(point1);
@@ -512,7 +514,7 @@ function calculateSidePoints(vectors) {
 
 	for (var i = editorUserPoints.length - 1; i >= 0; i--) {
 		
-		var point = new Object();
+		var point = new Point();
 
 		point.x = editorUserPoints[i].x - editorUserPoints[i].width * vectors[i].y;
 		point.y = editorUserPoints[i].y - editorUserPoints[i].width * -vectors[i].x;
@@ -657,9 +659,7 @@ function editorClick(e) {
 	// Reset width
 	//editorCurrentRoadWidth = editorStdRoadWidth;
 
-	var point = new Object();
-	point.x = x;
-	point.y = y;
+	var point = new Point(x,y);
 	snapToGrid(point);
 	point.width = editorCurrentRoadWidth;
 	editorUserPoints.push(point);
