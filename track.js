@@ -1,9 +1,39 @@
-function Track (midPoints) {
+function Track () {
 
-	this.pts = midPoints;
-	this.vectors = this.calculateVectors();
-	this.sidePoints = this.calculateSidePoints();
-	this.controlPoints = this.calculateControlPoints();
+	this.pts = [];
+	this.vectors = [];
+	this.sidePoints = [];
+	this.controlPoints = [];
+	this.finishLine = [];
+	this.finished = false;
+
+}
+
+Track.prototype.refresh = function() {
+	
+	if (this.pts.length > 0) {
+		
+		this.vectors = this.calculateVectors();
+		this.sidePoints = this.calculateSidePoints();
+		this.controlPoints = this.calculateControlPoints();
+		this.finishLine = this.createFinishLine();
+
+	}
+
+}
+
+Track.prototype.addPoint = function(pnt) {
+	
+	this.pts.push(pnt);
+	this.refresh();
+
+}
+
+Track.prototype.deleteLastPoint = function() {
+	
+	if (this.pts.length > 0) {
+		this.pts.splice(this.pts.length - 1, 1);
+	}
 
 }
 
@@ -11,25 +41,51 @@ Track.prototype.getVectors = function() {
 	
 	return this.vectors;
 
-};
+}
 
 Track.prototype.getMidpoints = function() {
 	
 	return this.pts;
 
-};
+}
 
 Track.prototype.getSidepoints = function() {
 	
 	return this.sidePoints;
 
-};
+}
 
 Track.prototype.getControlpoints = function() {
 	
 	return this.controlPoints;
 
-};
+}
+
+Track.prototype.getFinishLine = function() {
+	
+	return this.finishLine;
+
+}
+
+Track.prototype.finish = function() {
+	
+	this.finished = true;
+	this.refresh();
+
+}
+
+Track.prototype.unfinish = function() {
+	
+	this.finished = false;
+	this.refresh();
+
+}
+
+Track.prototype.isFinished = function() {
+
+	return this.finished;
+
+}
 
 Track.prototype.calculateVectors = function() {
 
@@ -39,7 +95,8 @@ Track.prototype.calculateVectors = function() {
 		
 		if (i == 0) {
 
-			var vec = new Point(1, 0);
+			var vec = new Point();
+			vec.add(1, 0);
 
 			sideVectors.push(vec);
 
@@ -47,7 +104,7 @@ Track.prototype.calculateVectors = function() {
 
 			var vec = new Point();
 				
-			if (trackFinished) {
+			if (this.finished) {
 		
 				vec.addPoint(this.pts[0]).subPoint(this.pts[i - 1]);
 
@@ -89,7 +146,7 @@ Track.prototype.calculateSidePoints = function() {
 
 	}
 
-	if (trackFinished) {
+	if (this.finished) {
 		
 		var point1 = new Point();
 		var point2 = new Point();
@@ -161,7 +218,7 @@ Track.prototype.calculateControlPoints = function() {
 	var p1 = new Object();
 	var p2 = new Object();
 
-	if (trackFinished) {
+	if (this.finished) {
 		
 		p1.x = this.sidePoints[0].x;
 		p1.y = this.sidePoints[0].y + 1;
@@ -191,7 +248,7 @@ Track.prototype.calculateControlPoints = function() {
 		var B = this.sidePoints[i + 1];
 		var vA = new Object();
 		var vB = new Object();
-		if (i == this.sidePoints.length / 2 && trackFinished) {
+		if (i == this.sidePoints.length / 2 && this.finished) {
 			vA.x = -this.vectors[0].x;
 			vA.y = -this.vectors[0].y;
 			vB.x = -this.vectors[vecCount].x;
@@ -267,13 +324,22 @@ Track.prototype.calculateIntersection = function(A,vA,B,vB) {
 
 }
 
+Track.prototype.createFinishLine = function() {
+	
+	var finishLine = [];
+	finishLine.push(this.sidePoints[0]);
+	finishLine.push(this.sidePoints[this.sidePoints.length - 1]);
+	return finishLine;
+
+}
+
 Track.prototype.draw = function() {
 	
 	context.lineWidth = 2;
 	context.strokeStyle = "#000000";
 	drawSmoothPath(this.sidePoints, this.controlPoints);
 	context.fillStyle = "#AAAAAA";
-	//context.fill();
+	context.fill();
 
 	this.drawFinishLine();
 
@@ -283,11 +349,6 @@ Track.prototype.drawFinishLine = function() {
 	
 	context.lineWidth = 5;
 	context.strokeStyle = "#FF0000";
-
-	var line = [];
-	line.push(this.sidePoints[0]);
-	line.push(this.sidePoints[this.sidePoints.length - 1]);
-
-	drawPath(line);
+	drawPath(this.finishLine);
 
 };

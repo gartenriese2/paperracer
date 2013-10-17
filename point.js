@@ -88,6 +88,13 @@ Point.prototype.normalize = function() {
 
 };
 
+Point.prototype.snapToGrid = function() {
+	
+	this.x = gridSize * Math.round(this.x / gridSize);
+	this.y = gridSize * Math.round(this.y / gridSize);
+
+};
+
 Point.prototype.log = function() {
 	
 	console.log("x: " + this.x + ", y: " + this.y);

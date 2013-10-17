@@ -200,21 +200,6 @@ function createCurve(start, end, down) {
 
 */
 
-function repaint() {
-
-	if (editorUserPoints.length > 1) {
-
-		var track = new Track(editorUserPoints);
-		var sidePoints = track.getSidepoints();
-
-		track.draw();
-
-	}
-
-	initGrid();
-
-}
-
 
  
 function drawPath(path) {
@@ -264,24 +249,11 @@ function drawSmoothPath(path, controlPoints) {
 
 }
 
-
-function snapToGrid(point) {
-
-	point.x = gridSize * Math.round(point.x / gridSize);
-	point.y = gridSize * Math.round(point.y / gridSize);
-
-}
-
-function refresh() {
-	canvas.width = canvas.width; // Reset whole canvas
-	initBoard();
-}
-
 /* Testing */
 
 function testTrack() {
 
-	if (trackFinished) {
+	if (editor.track.isFinished()) {
 
 		// Disable click event
 		$("#canvas").unbind('click.editorClick');
@@ -292,6 +264,8 @@ function testTrack() {
 		$("#controls .controls_editor").hide();
 		$("#controls .controls_testTrack").fadeIn();
 
+		startTesting();
+
 	}
 
 }
@@ -299,141 +273,63 @@ function testTrack() {
 function endTestTrack() {
 
 	// Enable click event
-	$("#canvas").bind('click.editorClick', editorClick);
+	$("#canvas").on('click.editorClick', { editor: editor }, editor.click);
 
 	// Enable mousewheel event
-	$("#canvas").bind('mousewheel', editorMouseWheel);
+	$("#canvas").on('mousewheel', { editor: editor }, editor.mouseWheel);
 
 	$("#controls .controls_testTrack").hide();
 	$("#controls .controls_editor").fadeIn();
 
 }
 
+function startTesting() {
+
+
+
+}
+
 /* Editor */
 
+var editor;
 
-var editorUserPoints = [];
 var editorMinRoadWidth = 25;
 var editorStdRoadWidth = 50;
 var editorMaxRoadWidth = 150;
 var editorCurrentRoadWidth = editorStdRoadWidth;
 
-var trackFinished = false;
-
 function unDo() {
 
-	if (trackFinished) {
-
-		trackFinished = false;
-		refresh();
-		repaint();
-
-	} else if (editorUserPoints.length >= 1) {
-
-		editorUserPoints.splice(editorUserPoints.length - 1, 1);
-		refresh();
-		repaint();
-
-	}
+	editor.undo();
 
 }
 
 function finishTrack() {
 	
-	if (editorUserPoints.length > 3) {
-		trackFinished = true;
-		refresh();
-		repaint();
-	}
+	editor.finishTrack();
 	
 }
 
 function enableEditor() {
-	// Display / hide buttons
-	$("#controls .start").hide();
-	$("#controls .editor").hide();
-	$("#controls .controls_editor").fadeIn();
+	
+	editor = new Editor();
+	editor.enable();
 
-	// Enable click event
-	$("#canvas").bind('click.editorClick', editorClick);
-
-	// Enable mousewheel event
-	$("#canvas").bind('mousewheel', editorMouseWheel);
 }
 
 function disableEditor() {
 	
-	// Disable click event
-	$("#canvas").unbind('click.editorClick');
-	// Disable mouse wheel event
-	$("#canvas").unbind('mousewheel');
-	// Hide buttons
-	$("#controls .controls_editor").hide();
-	$("#controls .start").show();
-	$("#controls .editor").show();
-	
-	clearEditor();
+	editor.disable();
 
 }
 
 function clearEditor() {
-	editorUserPoints = [];
-	trackFinished = false;
-	refresh();
-	repaint();
-}
 
-/**
- * Event which is triggered on a click
- * @param  {Event} e The click event
- */
-function editorClick(e) {
-	console.log('Click event triggered!');
+	editor.clear();
 
-	// Get coordinates
-	var x = e.offsetX==undefined?e.pageX:e.offsetX;
-	var y = e.offsetY==undefined?e.pageY:e.offsetY;
-
-	// Reset width
-	//editorCurrentRoadWidth = editorStdRoadWidth;
-
-	var point = new Point(x,y);
-	snapToGrid(point);
-	point.width = editorCurrentRoadWidth;
-	editorUserPoints.push(point);
-
-	// Refresh the canvas
-	refresh();
-
-	// Render canvas
-	repaint();
-
-}
-
-/**
- * Callback function that is called when the mouswheel is
- * used
- * @param Event e The browser event
- * @param int delta Movement of the wheel
- */
-function editorMouseWheel(e, delta) {
-	// Change width of the last point
-	var index = editorUserPoints.length-1;
-	if(index > 0) {
-		editorUserPoints[index].width += delta;
-		editorCurrentRoadWidth = editorUserPoints[index].width;
-		if(editorUserPoints[index].width > editorMaxRoadWidth) {
-			editorUserPoints[index].width = editorMaxRoadWidth;
-		} else if(editorUserPoints[index].width < editorMinRoadWidth) {
-			editorUserPoints[index].width = editorMinRoadWidth;
-		}
-		console.log("New road width: " + editorUserPoints[index].width);
-	}
-	refresh();
-	repaint();
 }
 
 function editorSave() {
-	var jsonString = JSON.stringify(editorUserPoints);
+	var jsonString = JSON.stringify(editor.track.getMidpoints());
 	alert(jsonString);
 }
