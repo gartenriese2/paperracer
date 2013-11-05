@@ -285,7 +285,7 @@ function endTestTrack() {
 
 function startTesting() {
 
-
+	var g = new Game(editor.getTrack(), 1);
 
 }
 

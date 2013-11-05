@@ -95,10 +95,7 @@ Track.prototype.calculateVectors = function() {
 		
 		if (i == 0) {
 
-			var vec = new Point();
-			vec.add(1, 0);
-
-			sideVectors.push(vec);
+			sideVectors.push(new Point(1, 0));
 
 		} else if (i == this.pts.length - 1) {
 

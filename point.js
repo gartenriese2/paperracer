@@ -95,6 +95,12 @@ Point.prototype.snapToGrid = function() {
 
 };
 
+Point.prototype.getDistance = function(pnt) {
+	
+	return Math.sqrt(Math.pow(this.x - pnt.x, 2) + Math.pow(this.y - pnt.y, 2));
+
+};
+
 Point.prototype.log = function() {
 	
 	console.log("x: " + this.x + ", y: " + this.y);

@@ -36,6 +36,12 @@ Editor.prototype.disable = function() {
 
 }
 
+Editor.prototype.getTrack = function() {
+	
+	return this.track;
+
+}
+
 Editor.prototype.refresh = function() {
 	
 	canvas.width = canvas.width; // Reset whole canvas
